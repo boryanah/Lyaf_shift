@@ -46,6 +46,19 @@ for j in range(4):
         ap_mean, ap_error, ap_perc, ap_sign = param_mean_error_perc_sign['aps']
         at_mean, at_error, at_perc, at_sign = param_mean_error_perc_sign['ats']
 
+        
+        # THERE IS SOME KIND OF ISSUE WITH THE LOS_DIR = Y MODEL 4 COULD WE HAVE MESSED UP THE CALCULATION (affects only los_dir = y, model_no = 4, jk, rmin = 30, 40)
+        mask = (aps < 1.5) & (aps > 0.5) & (ats < 1.5) & (ats > 0.5)
+        if "jk_" == stats_type:
+            N = np.sum(mask)
+            print(N)
+            ap_mean = np.mean(aps[mask])
+            at_mean = np.mean(ats[mask])
+            ap_error = np.sqrt(N-1.)*np.std(aps[mask], ddof=0)
+            at_error = np.sqrt(N-1.)*np.std(ats[mask], ddof=0)
+
+
+        
         ap_means[i] = ap_mean
         at_means[i] = at_mean
         ap_errors[i] = ap_error
@@ -53,22 +66,21 @@ for j in range(4):
 
     plt.subplot(2, 1, 1)
     #plt.figure(1, figsize=(9, 7))
-    plt.errorbar(r_mins-offsets[j], ap_means, yerr=ap_errors, color=cs[j], ls='', marker='o', capsize=4, label=rf"${{\rm Model}} \ {j+1:d}$")
-
+    plt.errorbar(r_mins+offsets[j], ap_means, yerr=ap_errors, color=cs[j], ls='', marker='o', capsize=4, label=rf"${{\rm Model}} \ {j+1:d}$")
 
     plt.subplot(2, 1, 2)
     #plt.figure(2, figsize=(9, 7))
-    plt.errorbar(r_mins-offsets[j], at_means, yerr=at_errors, color=cs[j], ls='', capsize=4, marker='o')
+    plt.errorbar(r_mins+offsets[j], at_means, yerr=at_errors, color=cs[j], ls='', capsize=4, marker='o')
 
 plt.subplot(2, 1, 1)
 plt.ylabel(r"$\alpha_\parallel$")
-plt.ylim([0.985, 1.015])
+plt.ylim([0.98, 1.02])
 plt.gca().axhline(y=1, ls='--', color='k')
 plt.legend(frameon=False)
 
 plt.subplot(2, 1, 2)
 plt.ylabel(r"$\alpha_\perp$")
-plt.ylim([0.985, 1.015])
+plt.ylim([0.98, 1.02])
 plt.gca().axhline(y=1, ls='--', color='k')
 plt.savefig(f"figs/{stats_type}apat_rmin_LOS{los_dir}_njk{N_jk:d}.png")
 plt.show()
