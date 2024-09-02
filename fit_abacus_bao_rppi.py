@@ -16,7 +16,7 @@ TODO: verify, save, share, pair summation; other LOS; SIGMARPRT; EFFECT OF RPMIN
 data = np.load(fn)
 xi_s_mu = data['xi_s_mu']
 
-data_special = np.load("/global/homes/b/boryanah/repos/abacus_tng_lyalpha/julien/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
+data_special = np.load("data/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
 npairs = data_special['npairs'] # might need to load from new runs
 
 xi_s_mu = 0.5*(xi_s_mu[:, :npibins//2][:, ::-1] + xi_s_mu[:, npibins//2:])
@@ -123,17 +123,17 @@ for i_jk in range(N_jk):
         sim_name = f"AbacusSummit_base_c000_ph{i_sim:03d}"
                     
         if ijk_grid is not None:
-            fn = f"/global/homes/b/boryanah/repos/abacus_tng_lyalpha/julien/data_subs/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_144_down{scale_factor:d}_i{i_grid}_j{j_grid}_k{k_grid}_jump2.npz"
+            fn = f"data_subs/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_144_down{scale_factor:d}_i{i_grid}_j{j_grid}_k{k_grid}_jump2.npz"
         else:
-            fn = f"/global/homes/b/boryanah/repos/abacus_tng_lyalpha/julien/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_143_down{scale_factor:d}.npz"
+            fn = f"data/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_143_down{scale_factor:d}.npz"
 
         # process
         data = np.load(fn)
         xi_s_mu = data['xi_s_mu']
         if want_jump == 1:
-            data_special = np.load("/global/homes/b/boryanah/repos/abacus_tng_lyalpha/julien/data_subs/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_144_down8_i1_j1_k1_jump2.npz")
+            data_special = np.load("data_subs/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_144_down8_i1_j1_k1_jump2.npz")
         else:
-            data_special = np.load("/global/homes/b/boryanah/repos/abacus_tng_lyalpha/julien/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
+            data_special = np.load("data/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
         npairs = data_special['npairs'] # might need to load from new runs
         xi_s_mu = 0.5*(xi_s_mu[:, :npibins//2][:, ::-1] + xi_s_mu[:, npibins//2:])
         npairs = 1.0*(npairs[:, :npibins//2][:, ::-1] + npairs[:, npibins//2:])

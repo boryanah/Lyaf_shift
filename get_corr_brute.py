@@ -121,8 +121,7 @@ corr_type = "rppi" # smu
 t = time.time()
 sys.stdout.flush()
 
-
-save_fn = f"autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_{i:03d}_down{scale_factor:d}_try4.npz"
+save_fn = f"data/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_{i:03d}_down{scale_factor:d}_try4.npz"
 
 print("starting corrfunc")
 xi_s_mu, npairs, rpavg, rmax, pimax = get_corr(x1, y1, z1, w1, rpbins, nbins_mu, lbox, Nthread, num_cells=20, x2=None, y2=None, z2=None, w2=None, corr_type=corr_type)
