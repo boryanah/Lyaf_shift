@@ -1,0 +1,12 @@
+source /global/common/software/desi/desi_environment.sh 23.1 # inherits it
+source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
+module unload desiutil
+module load desiutil/3.2.6
+alias emacs="env --unset=LD_LIBRARY_PATH emacs"
+alias more="less"
+
+
+source /global/common/software/desi/users/acuceu/activate_vega_master.sh
+python -m ipykernel install --user --name vega --display-name Vega
+
+python run_vega.py configs/main.ini
