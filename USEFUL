@@ -1,3 +1,6 @@
+t = fitsio.read("/pscratch/sd/b/boryanah/abacus_tng_lyalpha/cf_lya_x_lya_abacus_mean_Model_4.fits")
+divide by 6 and 20
+
 source /global/common/software/desi/desi_environment.sh 23.1 # inherits it
 source /global/common/software/desi/users/adematti/cosmodesi_environment.sh main
 module unload desiutil
@@ -10,3 +13,11 @@ source /global/common/software/desi/users/acuceu/activate_vega_master.sh
 python -m ipykernel install --user --name vega --display-name Vega
 
 python run_vega.py configs/main.ini
+
+
+. "/global/homes/b/boryanah/anaconda3/etc/profile.d/conda.sh"
+conda activate desc
+
+salloc --nodes 1 --qos interactive --time 04:00:00 --constrain cpu
+
+

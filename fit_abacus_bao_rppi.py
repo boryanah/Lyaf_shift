@@ -37,6 +37,12 @@ rpbinc = (rpbins[1:] + rpbins[:-1])*.5
 nrpbins = npibins = int(rpbins[-1]/(rpbins[1]-rpbins[0]))*2 # TODO: make prettier
 rp_grid = rt_grid = rpbinc
 
+want_fft = True
+if want_fft:
+    fft_str = "_fft"
+else:
+    fft_str = ""
+
 # redshift grid
 z_eff = 2.5
 z_grid = np.ones_like(rp_grid) * z_eff
@@ -73,6 +79,8 @@ R = np.sqrt(h["COR"].data["RP"]**2+h["COR"].data["RT"]**2)
 mask_data = (h["COR"].data["RP"] > rp_min) & (h["COR"].data["RP"] < rp_max) & (h["COR"].data["RT"] > rt_min) & (h["COR"].data["RT"] < rt_max) & (R > rmin) & (R < rmax)
 mask_2d_data = mask_data[:, None] & mask_data[None, :]
 cov = h["COR"].data["CO"] / 20. # matrice de covariance de DESI Y1 CHECK
+# another division # TESTING!!!!!!!!!!!!!!!!!!
+cov /= 6.
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov = np.linalg.inv(cov)
 
@@ -91,6 +99,13 @@ elif want_jump == 0:
     N_jk = 6
 elif want_jump == 2:
     N_jk = 6
+los_dir = sys.argv[4] #"y", "z"
+if los_dir == "zy" or los_dir == "yz":
+    want_both_los = True
+else:
+    want_both_los = False
+if want_both_los:
+    N_jk *= 2
 aps = np.zeros(N_jk) 
 ats = np.zeros(N_jk)
 bias = np.zeros(N_jk) 
@@ -98,8 +113,8 @@ beta = np.zeros(N_jk)
 sigmap = np.zeros(N_jk)
 sigmat = np.zeros(N_jk) 
 scale_factor = 8
-los_dir = sys.argv[4] #"y", "z"
 corr_type = "rppi"
+run_init = True
 
 for i_jk in range(N_jk):
     print(i_jk)
@@ -107,8 +122,17 @@ for i_jk in range(N_jk):
     count = 0
     for i in range(N_jk):
         if want_jump != 2: # not jackknife
-            if i == i_jk: continue # TESTING
+            if i == i_jk: continue
 
+        if want_both_los:
+            if i >= N_jk // 2:
+                i_dir = 1
+                los_dir = "y"
+            else:
+                i_dir = 0 # tuks
+                los_dir = "z"
+            i = i - i_dir*(N_jk // 2)
+            
         if want_jump == 1:
             i_sim = i // 8
             ijk_grid = i - i_sim * 8
@@ -119,30 +143,47 @@ for i_jk in range(N_jk):
         elif want_jump == 2:
             i_sim = i
             ijk_grid = i_grid = j_grid = k_grid = None
-        
+            
         sim_name = f"AbacusSummit_base_c000_ph{i_sim:03d}"
                     
         if ijk_grid is not None:
             fn = f"data_subs/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_144_down{scale_factor:d}_i{i_grid}_j{j_grid}_k{k_grid}_jump2.npz"
         else:
             fn = f"data/autocorr_{corr_type}_dF_{sim_name}_Model_{model_no:d}_LOS{los_dir}_part_143_down{scale_factor:d}.npz"
-
+        
         # process
-        data = np.load(fn)
-        xi_s_mu = data['xi_s_mu']
-        if want_jump == 1:
-            data_special = np.load("data_subs/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_144_down8_i1_j1_k1_jump2.npz")
+        if want_fft:
+            save_dir = "/pscratch/sd/b/boryanah/AbacusLymanAlpha/correlations/Xi/z2.500/"
+            data = np.load(save_dir + f"Xi_rppi_LyAxLyA_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+
+            rp_bins = data['rp_bins']
+            pi_bins = data['pi_bins']
+            xirppi = data['xirppi']
+
+            rp_binc = (rp_bins[1:]+rp_bins[:-1])*.5
+            pi_binc = (pi_bins[1:]+pi_bins[:-1])*.5
+
+            choice = (rp_binc < rpbins[-1])[:, None] & (pi_binc < rpbins[-1])[None, :]
+            xirppi = xirppi[choice].reshape(np.sum(rp_binc < rpbins[-1]), np.sum(pi_binc < rpbins[-1]))
+            xirppi = (xirppi.T)
+            xi = xirppi.flatten()
         else:
-            data_special = np.load("data/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
-        npairs = data_special['npairs'] # might need to load from new runs
-        xi_s_mu = 0.5*(xi_s_mu[:, :npibins//2][:, ::-1] + xi_s_mu[:, npibins//2:])
-        npairs = 1.0*(npairs[:, :npibins//2][:, ::-1] + npairs[:, npibins//2:])
-        #xi_s_mu = xi_s_mu.reshape(nrpbins//2, 2, npibins//2, 1).mean(axis=(1, 3))
-        xi_s_mu = (xi_s_mu*npairs).reshape(nrpbins//2, 2, npibins//2, 1).sum(axis=(1, 3))
-        npairs = npairs.reshape(nrpbins//2, 2, npibins//2, 1).sum(axis=(1, 3))
-        xi_s_mu /= npairs
-        xi_s_mu = xi_s_mu.T
-        xi = xi_s_mu.flatten()
+            data = np.load(fn)
+            xi_s_mu = data['xi_s_mu']
+            if want_jump == 1:
+                data_special = np.load("data_subs/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_144_down8_i1_j1_k1_jump2.npz")
+            else:
+                data_special = np.load("data/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
+            npairs = data_special['npairs'] # might need to load from new runs
+            # tuks TESTING can fix
+            xi_s_mu = 0.5*(xi_s_mu[:, :npibins//2][:, ::-1] + xi_s_mu[:, npibins//2:])
+            npairs = 1.0*(npairs[:, :npibins//2][:, ::-1] + npairs[:, npibins//2:])
+            #xi_s_mu = xi_s_mu.reshape(nrpbins//2, 2, npibins//2, 1).mean(axis=(1, 3))
+            xi_s_mu = (xi_s_mu*npairs).reshape(nrpbins//2, 2, npibins//2, 1).sum(axis=(1, 3))
+            npairs = npairs.reshape(nrpbins//2, 2, npibins//2, 1).sum(axis=(1, 3))
+            xi_s_mu /= npairs
+            xi_s_mu = xi_s_mu.T
+            xi = xi_s_mu.flatten()
         xi = xi.reshape(len(xi), 1)
         
         if count == 0:
@@ -167,11 +208,10 @@ for i_jk in range(N_jk):
         data = xi_mean[mask]
     else:
         data = xi_this[mask]
-    print(data.shape)
 
     def chisq(params):
         #model = monopole_model(params)
-        model = vega.compute_model(params, run_init=True)['lyaxlya']
+        model = vega.compute_model(params, run_init=run_init)['lyaxlya']
         diff = model[mask] - data
         chisq = diff @ icov @ diff.T
         return chisq
@@ -179,8 +219,8 @@ for i_jk in range(N_jk):
     # initialize and run iminuit
     minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
-    #quit()
-
+    run_init = False # to speed up
+    
     # gaussian uncertainties
     #print("errors", minimizer.errors)
     aps[i_jk] = minimizer.values['ap']
@@ -196,7 +236,7 @@ if want_jump == 2: # not jackknife
     data = xi_mean[mask]
     minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
-    
+
 def jk_stats(par_name, pars):
     mean_par = np.mean(pars)
     error_par = np.sqrt(N_jk-1)*np.std(pars, ddof=0)
@@ -246,4 +286,8 @@ pars_dict['bias'] = np.array(stats('bias_LYA', bias))
 pars_dict['beta'] = np.array(stats('beta_LYA', beta))
 pars_dict['sigmap'] = np.array(stats('sigmaNL_par', sigmap))
 pars_dict['sigmat'] = np.array(stats('sigmaNL_per', sigmat))
-np.savez(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+if want_both_los:
+    np.savez(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+else:
+    np.savez(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+# tuks
