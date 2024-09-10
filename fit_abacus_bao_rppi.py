@@ -156,8 +156,7 @@ for i_jk in range(N_jk):
         
         # process
         if want_fft:
-            save_dir = "/pscratch/sd/b/boryanah/AbacusLymanAlpha/correlations/Xi/z2.500/"
-            data = np.load(save_dir + f"Xi_rppi_LyAxLyA_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+            data = np.load(f"data_fft/Xi_rppi_LyAxLyA_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
 
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
