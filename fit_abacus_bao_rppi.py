@@ -33,6 +33,7 @@ vega = VegaInterface('configs/main.ini') # makes no difference ask andrei re ari
 
 # redefine coordinate grid
 rpbins = np.linspace(0, 148, 38)
+#rpbins = np.linspace(0, 200, 51)
 rpbinc = (rpbins[1:] + rpbins[:-1])*.5
 nrpbins = npibins = int(rpbins[-1]/(rpbins[1]-rpbins[0]))*2 # TODO: make prettier
 rp_grid = rt_grid = rpbinc
@@ -68,6 +69,7 @@ rt_min = 0.
 rt_max = 200.
 rmin = float(sys.argv[3]) # 10, 20, 30, 40 # 0 only if turning on arinyo
 rmax = 148.
+#rmax = 200.
 mask = (rp.flatten() > rp_min) & (rp.flatten() < rp_max) & (rt.flatten() > rt_min) & (rt.flatten() < rt_max) & (r.flatten() > rmin) & (r.flatten() < rmax)
 mask_2d = mask[:, None] & mask[None, :]
 
@@ -121,15 +123,16 @@ for i_jk in range(N_jk):
     
     count = 0
     for i in range(N_jk):
+        match = i == i_jk
         if want_jump != 2: # not jackknife
-            if i == i_jk: continue
+            if match: continue
 
         if want_both_los:
             if i >= N_jk // 2:
                 i_dir = 1
                 los_dir = "y"
             else:
-                i_dir = 0 # tuks
+                i_dir = 0
                 los_dir = "z"
             i = i - i_dir*(N_jk // 2)
             
@@ -175,7 +178,8 @@ for i_jk in range(N_jk):
             else:
                 data_special = np.load("data/autocorr_rppi_dF_AbacusSummit_base_c000_ph004_Model_4_LOSz_part_143_down8.npz")
             npairs = data_special['npairs'] # might need to load from new runs
-            # tuks TESTING can fix
+            xi_s_mu = (xi_s_mu*npairs)[:, :npibins//2][:, ::-1] + (xi_s_mu*npairs)[:, npibins//2:]
+            npairs = npairs[:, :npibins//2][:, ::-1] + npairs[:, npibins//2:]
             xi_s_mu = 0.5*(xi_s_mu[:, :npibins//2][:, ::-1] + xi_s_mu[:, npibins//2:])
             npairs = 1.0*(npairs[:, :npibins//2][:, ::-1] + npairs[:, npibins//2:])
             #xi_s_mu = xi_s_mu.reshape(nrpbins//2, 2, npibins//2, 1).mean(axis=(1, 3))
@@ -190,11 +194,14 @@ for i_jk in range(N_jk):
             xi_final = xi
         else:
             xi_final = np.hstack((xi_final, xi))
-        if want_jump == 2:
+        if want_jump == 2 and match:
             xi_this = xi.flatten().copy()
         count += 1
 
-    print("should be ", N_jk-1, count)
+    if want_jump != 2:
+        print("should be ", N_jk-1, count)
+    else:
+        print("should be ", N_jk, count)
     
     """
     cov = np.cov(xi_final)
@@ -290,4 +297,3 @@ if want_both_los:
     np.savez(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
 else:
     np.savez(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
-# tuks

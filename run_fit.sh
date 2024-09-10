@@ -1,3 +1,49 @@
+python fit_abacus_bao_rppi.py 1 0 10. zy
+python fit_abacus_bao_rppi.py 2 0 10. zy
+python fit_abacus_bao_rppi.py 3 0 10. zy
+python fit_abacus_bao_rppi.py 4 0 10. zy
+
+python fit_abacus_bao_rppi.py 1 0 20. zy
+python fit_abacus_bao_rppi.py 2 0 20. zy
+python fit_abacus_bao_rppi.py 3 0 20. zy
+python fit_abacus_bao_rppi.py 4 0 20. zy
+
+python fit_abacus_bao_rppi.py 1 0 30. zy
+python fit_abacus_bao_rppi.py 2 0 30. zy
+python fit_abacus_bao_rppi.py 3 0 30. zy
+python fit_abacus_bao_rppi.py 4 0 30. zy
+
+python fit_abacus_bao_rppi.py 1 0 40. zy
+python fit_abacus_bao_rppi.py 2 0 40. zy
+python fit_abacus_bao_rppi.py 3 0 40. zy
+python fit_abacus_bao_rppi.py 4 0 40. zy
+
+python fit_abacus_bao_rppi.py 1 2 10. zy
+python fit_abacus_bao_rppi.py 2 2 10. zy
+python fit_abacus_bao_rppi.py 3 2 10. zy
+python fit_abacus_bao_rppi.py 4 2 10. zy
+
+python fit_abacus_bao_rppi.py 1 2 20. zy
+python fit_abacus_bao_rppi.py 2 2 20. zy
+python fit_abacus_bao_rppi.py 3 2 20. zy
+python fit_abacus_bao_rppi.py 4 2 20. zy
+
+python fit_abacus_bao_rppi.py 1 2 30. zy
+python fit_abacus_bao_rppi.py 2 2 30. zy
+python fit_abacus_bao_rppi.py 3 2 30. zy
+python fit_abacus_bao_rppi.py 4 2 30. zy
+
+python fit_abacus_bao_rppi.py 1 2 40. zy
+python fit_abacus_bao_rppi.py 2 2 40. zy
+python fit_abacus_bao_rppi.py 3 2 40. zy
+python fit_abacus_bao_rppi.py 4 2 40. zy
+
+
+
+
+
+
+
 python fit_abacus_bao_rppi.py 1 0 10. z
 python fit_abacus_bao_rppi.py 2 0 10. z
 python fit_abacus_bao_rppi.py 3 0 10. z
