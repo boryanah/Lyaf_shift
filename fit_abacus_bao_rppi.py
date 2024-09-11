@@ -32,8 +32,8 @@ xi_s_mu /= npairs
 vega = VegaInterface('configs/main.ini') # makes no difference ask andrei re arinyo maybe different initializing of parameters
 
 # redefine coordinate grid
-rpbins = np.linspace(0, 148, 38)
-#rpbins = np.linspace(0, 200, 51)
+#rpbins = np.linspace(0, 148, 38)
+rpbins = np.linspace(0, 200, 51)
 rpbinc = (rpbins[1:] + rpbins[:-1])*.5
 nrpbins = npibins = int(rpbins[-1]/(rpbins[1]-rpbins[0]))*2 # TODO: make prettier
 rp_grid = rt_grid = rpbinc
@@ -68,7 +68,8 @@ rp_max = 200.
 rt_min = 0.
 rt_max = 200.
 rmin = float(sys.argv[3]) # 10, 20, 30, 40 # 0 only if turning on arinyo
-rmax = 148.
+#rmax = 148.
+rmax = 180.
 #rmax = 200.
 mask = (rp.flatten() > rp_min) & (rp.flatten() < rp_max) & (rt.flatten() > rt_min) & (rt.flatten() < rt_max) & (r.flatten() > rmin) & (r.flatten() < rmax)
 mask_2d = mask[:, None] & mask[None, :]
@@ -81,8 +82,8 @@ R = np.sqrt(h["COR"].data["RP"]**2+h["COR"].data["RT"]**2)
 mask_data = (h["COR"].data["RP"] > rp_min) & (h["COR"].data["RP"] < rp_max) & (h["COR"].data["RT"] > rt_min) & (h["COR"].data["RT"] < rt_max) & (R > rmin) & (R < rmax)
 mask_2d_data = mask_data[:, None] & mask_data[None, :]
 cov = h["COR"].data["CO"] / 20. # matrice de covariance de DESI Y1 CHECK
-# another division # TESTING!!!!!!!!!!!!!!!!!!
-cov /= 6.
+#cov /= 6.
+cov /= 12.
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov = np.linalg.inv(cov)
 
@@ -207,14 +208,14 @@ for i_jk in range(N_jk):
     cov /= count
     icov = np.diag(1./np.diag(cov))
     """
-
+    
     # average out
     xi_mean = np.mean(xi_final, axis=1)
     if want_jump != 2:
         data = xi_mean[mask]
     else:
         data = xi_this[mask]
-
+        
     def chisq(params):
         #model = monopole_model(params)
         model = vega.compute_model(params, run_init=run_init)['lyaxlya']
@@ -222,6 +223,7 @@ for i_jk in range(N_jk):
         chisq = diff @ icov @ diff.T
         return chisq
 
+    
     # initialize and run iminuit
     minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
