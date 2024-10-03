@@ -8,6 +8,7 @@ import plotparams
 plotparams.buba()
 
 """
+
 python plot_apat.py 10. 1 zy
 python plot_apat.py 20. 1 zy
 python plot_apat.py 30. 1 zy
@@ -73,11 +74,14 @@ python plot_apat.py 40. 4 y
 
 rp_min = rt_min = 0.
 rp_max = rt_max = 200.
-r_max = 148.
+#r_max = 148.
+r_max = 180.
 N_jk = 6#*8
 stats_type = "stacked_"
 #stats_type = "jk_"
 fft_str = "_fft"
+bb_str = "_bb"
+#bb_str = ""
 
 r_min = float(sys.argv[1])# 10.
 model_no = int(sys.argv[2]) #1
@@ -88,7 +92,7 @@ los_dir = "zy"
 if len(los_dir) == 2:
     N_jk *= 2
 
-data = np.load(f"data_fits/{stats_type}stats_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{r_min:.1f}_rmax{r_max:.1f}_njk{N_jk:d}{fft_str}.npz", allow_pickle=True)
+data = np.load(f"data_fits/{stats_type}stats{bb_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{r_min:.1f}_rmax{r_max:.1f}_njk{N_jk:d}{fft_str}.npz", allow_pickle=True)
 print(data.files)
 #'param_mean_error_perc_sign', 'aps', 'ats', 'bias', 'beta', 'sigmap', 'sigmat'
 
@@ -117,4 +121,4 @@ plt.xlim([0.985, 1.015])
 plt.ylim([0.985, 1.015])
 plt.gca().axhline(y=1, ls='--', color='k')
 plt.gca().axvline(x=1, ls='--', color='k')
-plt.savefig(f"figs/{stats_type}apat_Model_{model_no:d}_LOS{los_dir}_rmin{r_min:.1f}_njk{N_jk:d}{fft_str}.png")
+plt.savefig(f"figs/{stats_type}apat{bb_str}_Model_{model_no:d}_LOS{los_dir}_rmin{r_min:.1f}_rmax{r_max:.1f}_njk{N_jk:d}{fft_str}.png")
