@@ -28,6 +28,8 @@ los_dir = sys.argv[1]
 fft_str = "_fft"
 bb_str = "_bb"
 #bb_str = ""
+lcv_str = "_LCV"
+#lcv_str = ""
 if len(los_dir) == 2:
     N_jk *= 2
 
@@ -47,7 +49,7 @@ for j in range(4):
 
     for i, r_min in enumerate(r_mins):
 
-        data = np.load(f"data_fits/{stats_type}stats{bb_str}_Model_{j+1:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{r_min:.1f}_rmax{r_max:.1f}_njk{N_jk:d}{fft_str}.npz", allow_pickle=True)
+        data = np.load(f"data_fits/{stats_type}stats{bb_str}{lcv_str}_Model_{j+1:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{r_min:.1f}_rmax{r_max:.1f}_njk{N_jk:d}{fft_str}.npz", allow_pickle=True)
         print(data.files)
         #'param_mean_error_perc_sign', 'aps', 'ats', 'bias', 'beta', 'sigmap', 'sigmat'
 
@@ -107,5 +109,5 @@ plt.subplot(2, 1, 2)
 plt.ylabel(r"$\alpha_\perp$")
 plt.ylim([0.98, 1.02])
 plt.gca().axhline(y=1, ls='--', color='k')
-plt.savefig(f"figs/{stats_type}apat{bb_str}_rmin_rmax{r_max:.1f}_LOS{los_dir}_njk{N_jk:d}{fft_str}.png")
+plt.savefig(f"figs/{stats_type}apat{bb_str}{lcv_str}_rmin_rmax{r_max:.1f}_LOS{los_dir}_njk{N_jk:d}{fft_str}.png")
 plt.show()

@@ -29,6 +29,11 @@ xi_s_mu /= npairs
 """
 
 # initialize Vega
+want_lcv = True
+if want_lcv:
+    lcv_str = "_LCV"
+else:
+    lcv_str = ""
 want_bb = True
 if want_bb:
     bb_str = "_bb"
@@ -162,7 +167,7 @@ for i_jk in range(N_jk):
         
         # process
         if want_fft:
-            data = np.load(f"data_fft/Xi_rppi_LyAxLyA_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+            data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
 
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
@@ -299,6 +304,6 @@ pars_dict['beta'] = np.array(stats('beta_LYA', beta))
 pars_dict['sigmap'] = np.array(stats('sigmaNL_par', sigmap))
 pars_dict['sigmat'] = np.array(stats('sigmaNL_per', sigmat))
 if want_both_los:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
 else:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
