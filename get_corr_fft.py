@@ -40,17 +40,18 @@ Ndim_x = Ndim_y = Ndim_z = 6912
 # user choices
 sim_name = sys.argv[1] # "AbacusSummit_base_c000_ph000"
 model = int(sys.argv[2]) # 1, 2, 3, 4
-want_cross = 0 # int(sys.argv[3]) # 0 or 1 (F or T)
+want_cross = 1 # int(sys.argv[3]) # 0 or 1 (F or T)
+want_qso = 0#True
 if want_cross:
     assert not want_qso
 los_dir = sys.argv[3]#"losy" # "losy"
 
 # mock directory
 save_dir = "/global/cfs/cdirs/desi/public/cosmosim/AbacusLymanAlpha/v1/"
+save_qso_dir = "/pscratch/sd/b/boryanah/abacus_tng_lyalpha/"
 save_xi_dir = "/pscratch/sd/b/boryanah/AbacusLymanAlpha/"
 
 # load low-pass-filtered delta F in Fourier space
-want_qso = 0#True
 if want_qso:
     f = asdf.open(save_dir + f"/mocks/{sim_name}/z{z:.3f}/complex_QSO_LOS{los_dir[-1]}.asdf")
     field_fft = f['data']['ComplexDeltaGalaxyReal'][:] + 1j*f['data']['ComplexDeltaGalaxyImag'][:]
@@ -99,10 +100,13 @@ w_klos = get_kernel(klos_hMpc[mask_los_1d], 0.9*klos_max, 0.1*klos_max/2.)
 
 # if want cross-correlation with quasars, load delta QSO
 if want_cross:
-    f = asdf.open(save_dir + f"/mocks/{sim_name}/z{z:.3f}/complex_QSO_LOS{los_dir[-1]}.asdf")
+    f = asdf.open(save_qso_dir + f"/mocks/{sim_name}/z{z:.3f}/complex_QSO_LOS{los_dir[-1]}.asdf")
     field2_fft = f['data']['ComplexDeltaGalaxyReal'][:] + 1j*f['data']['ComplexDeltaGalaxyImag'][:]
     print(f['data'].keys())
     del f; gc.collect()
+    
+    if los_dir == "losy":
+        field2_fft = np.transpose(field2_fft, (0, 2, 1)) 
 else:
     field2_fft = None
     

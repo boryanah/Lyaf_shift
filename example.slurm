@@ -19,4 +19,4 @@ conda activate desc
 #alias emacs="env --unset=LD_LIBRARY_PATH emacs"
 #alias more="less"
 
-sh tmp_run_corr_fft.sh
+sh run_corr_fft.sh

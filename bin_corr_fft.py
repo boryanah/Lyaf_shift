@@ -15,7 +15,7 @@ Lbox = 2000.
 los_dir = sys.argv[3] #"losz"
 sim_name = sys.argv[1]
 model = int(sys.argv[2])
-want_cross = 0 #int(sys.argv[3])
+want_cross = 1 #int(sys.argv[3])
 want_qso = 0
 want_xirppi = 1#int(sys.argv[3])#False
 

@@ -99,6 +99,7 @@ def main(sim_name, redshift, tracer, nmesh, sr, rectype, convention):
         PositionRSD = np.vstack((f['x'], f['y'], f['z'])).T
         """
         pass # TODO
+    del f, Velocity; gc.collect()
     
     # wrap around box so that pos range from [0, Lbox)
     Position %= Lbox
@@ -106,10 +107,13 @@ def main(sim_name, redshift, tracer, nmesh, sr, rectype, convention):
         PositionRSD %= Lbox
 
     # generate randoms
-    rands_fac = 16 #40
+    rands_fac = 1#6 #40
+    # TESTING!!!!
     RandomPosition = np.vstack((np.random.rand(rands_fac*Position.shape[0]), np.random.rand(rands_fac*Position.shape[0]), np.random.rand(rands_fac*Position.shape[0])))*Lbox
     RandomPosition = RandomPosition.T
 
+    # TESTING!!!!!!!!!!!!!!!
+    #Position = Position[::100]
 
     if want_make_thinner:
         z_max = 830.
@@ -154,7 +158,8 @@ def main(sim_name, redshift, tracer, nmesh, sr, rectype, convention):
         assert los_dir == "z"
         n_parts = 144
         nmesh_lya = 1024
-        ngrid = 6912
+        ngrid = 6912//8 # TESTING!!!!
+        #ngrid = 6912
         cell_size = Lbox/ngrid
         print(sim_name, model_no, los_dir)
         
@@ -176,34 +181,44 @@ def main(sim_name, redshift, tracer, nmesh, sr, rectype, convention):
         pos_lya -= Lbox/2.
         pos_lya %= Lbox
         del x, y, z; gc.collect()
+        print(pos_lya.shape)
         
         density = np.zeros((nmesh_lya, nmesh_lya, nmesh_lya), dtype=np.float32)
+        density_weighted = np.zeros((nmesh_lya, nmesh_lya, nmesh_lya), dtype=np.float32)
         for i_part in range(n_parts):
             print(i_part)
+            # TESTING!!!
+            """
             data = asdf.open(lya_dir / sim_name / f"z{redshift:.3f}" / f"Model_{model_no:d}" / f"tau_Model_{model_no:d}_LOS{los_dir}_part_{i_part:03d}.asdf")['data']
-            tau_down = data[f'tau_rsd_los{los_dir}']
-            
-            F = np.exp(-tau_down)
+            F = np.exp(-data[f'tau_rsd_los{los_dir}'])
             mean_F = np.mean(F, dtype=np.float64)
             F /= mean_F
             F -= 1.
             F = F.flatten()
-            del tau_down, data; gc.collect()
             print(len(F), pos_lya.shape)
-            
+            """
+            F = np.load(f"/pscratch/sd/b/boryanah/abacus_tng_lyalpha/{sim_name}/dF_Model_{model_no:d}_LOS{los_dir}_part_{i_part:03d}_down8.npy")
+            F = F.flatten()
+            print(F.shape)
             displacements = recon_tracer.read_shifts(pos_lya, field='disp')
-            pos_lya[:, 0] += x_slab
 
             # old code corr cat should be rsd but whatever for now
-            tsc_parallel(pos_lya - displacements, density, weights=F)
-        np.save(save_recon_dir / f"density_lya_Model_{model_no:d}_LOS{los_dir}_{tracer}{extra}_postrecon_R{sr:.2f}_b{bias:.1f}_nmesh{nmesh:d}_{convention}_{rectype}_z{redshift:.3f}{thin_str}.npy", density)
+            tsc_parallel(pos_lya - displacements, density_weighted, box=Lbox, weights=F)
+            tsc_parallel(pos_lya - displacements, density, box=Lbox)
+
+            pos_lya[:, 0] += x_slab
+            del F, displacements; gc.collect()
+        print("2000?", pos_lya[:, 0].max())
+        np.save(save_recon_dir / f"density_lya_Model_{model_no:d}_LOS{los_dir}_{tracer}{extra}_postrecon_R{sr:.2f}_b{bias:.1f}_nmesh{nmesh:d}_{convention}_{rectype}_z{redshift:.3f}{thin_str}.npy", density_weighted)
+        np.save(save_recon_dir / f"density_ran_{tracer}{extra}_postrecon_R{sr:.2f}_b{bias:.1f}_nmesh{nmesh:d}_{convention}_{rectype}_z{redshift:.3f}{thin_str}.npy", density)
     random_displacements = recon_tracer.read_shifts(RandomPosition, field='disp')
 
+    """
     if want_lya:
         density = np.zeros((nmesh_lya, nmesh_lya, nmesh_lya), dtype=np.float32)
         tsc_parallel(RandomPosition - random_displacements, density)
         np.save(save_recon_dir / f"density_ran_{tracer}{extra}_postrecon_R{sr:.2f}_b{bias:.1f}_nmesh{nmesh:d}_{convention}_{rectype}_z{redshift:.3f}{thin_str}.npy", density)
-                         
+    """                  
     if want_rsd:
         # run reconstruction on the mocks w/ RSD
         print('Recon Second tracer')

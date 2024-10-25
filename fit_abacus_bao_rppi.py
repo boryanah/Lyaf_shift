@@ -29,7 +29,7 @@ xi_s_mu /= npairs
 """
 
 # initialize Vega
-want_lcv = True
+want_lcv = False
 if want_lcv:
     lcv_str = "_LCV"
 else:
@@ -39,7 +39,12 @@ if want_bb:
     bb_str = "_bb"
 else:    
     bb_str = ""
-vega = VegaInterface(f'configs/main{bb_str}.ini') # makes no difference ask andrei re arinyo maybe different initializing of parameters
+want_qso = True
+if want_qso:
+    qso_str = "_lyalya_lyaqso"
+else:
+    qso_str = ""
+vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference ask andrei re arinyo maybe different initializing of parameters
 
 # redefine coordinate grid
 #rpbins = np.linspace(0, 148, 38)
@@ -172,7 +177,7 @@ for i_jk in range(N_jk):
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
             xirppi = data['xirppi']
-
+            
             rp_binc = (rp_bins[1:]+rp_bins[:-1])*.5
             pi_binc = (pi_bins[1:]+pi_bins[:-1])*.5
 
@@ -180,6 +185,14 @@ for i_jk in range(N_jk):
             xirppi = xirppi[choice].reshape(np.sum(rp_binc < rpbins[-1]), np.sum(pi_binc < rpbins[-1]))
             xirppi = (xirppi.T)
             xi = xirppi.flatten()
+
+            if want_qso:
+                data = np.load(f"data_fft/Xi_rppi_LyAxQSO{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+                xirppi = data['xirppi']
+
+                xirppi = xirppi[choice].reshape(np.sum(rp_binc < rpbins[-1]), np.sum(pi_binc < rpbins[-1]))
+                xirppi = (xirppi.T)
+                xi_qso = xirppi.flatten()
         else:
             data = np.load(fn)
             xi_s_mu = data['xi_s_mu']
@@ -199,13 +212,23 @@ for i_jk in range(N_jk):
             xi_s_mu = xi_s_mu.T
             xi = xi_s_mu.flatten()
         xi = xi.reshape(len(xi), 1)
-        
+        if want_qso:
+            xi_qso = xi_qso.reshape(len(xi), 1)
+            
         if count == 0:
             xi_final = xi
         else:
             xi_final = np.hstack((xi_final, xi))
         if want_jump == 2 and match:
             xi_this = xi.flatten().copy()
+
+        if want_qso:
+            if count == 0:
+                xi_qso_final = xi_qso
+            else:
+                xi_qso_final = np.hstack((xi_qso_final, xi_qso))
+            if want_jump == 2 and match:
+                xi_qso_this = xi_qso.flatten().copy()
         count += 1
 
     if want_jump != 2:
@@ -226,15 +249,36 @@ for i_jk in range(N_jk):
     else:
         data = xi_this[mask]
         
+    if want_qso:
+        xi_qso_mean = np.mean(xi_qso_final, axis=1)
+        if want_jump != 2:
+            data_qso = xi_qso_mean[mask]
+        else:
+            data_qso = xi_qso_this[mask]
+        
     def chisq(params):
         #model = monopole_model(params)
         model = vega.compute_model(params, run_init=run_init)['lyaxlya']
         diff = model[mask] - data
         chisq = diff @ icov @ diff.T
         return chisq
+
+    def chisq_qso(params):
+        #model = monopole_model(params)
+        model = vega.compute_model(params, run_init=run_init)['lyaxlya']
+        diff = model[mask] - data
+        chisq = diff @ icov @ diff.T
+        
+        model = vega.compute_model(params, run_init=run_init)['lyaxqso']
+        diff = model[mask] - data_qso
+        chisq += diff @ icov @ diff.T
+        return chisq
     
     # initialize and run iminuit
-    minimizer = Minimizer(chisq, vega.sample_params)
+    if want_qso:
+        minimizer = Minimizer(chisq_qso, vega.sample_params)
+    else:
+        minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
     run_init = False # to speed up
     
@@ -251,7 +295,11 @@ for i_jk in range(N_jk):
 #print("bestfit", minimizer.values)
 if want_jump == 2: # not jackknife
     data = xi_mean[mask]
-    minimizer = Minimizer(chisq, vega.sample_params)
+    if want_qso:
+        data_qso = xi_qso_mean[mask]
+        minimizer = Minimizer(chisq_qso, vega.sample_params)
+    else:
+        minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
 
 def jk_stats(par_name, pars):
@@ -304,6 +352,6 @@ pars_dict['beta'] = np.array(stats('beta_LYA', beta))
 pars_dict['sigmap'] = np.array(stats('sigmaNL_par', sigmap))
 pars_dict['sigmat'] = np.array(stats('sigmaNL_per', sigmat))
 if want_both_los:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
 else:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)

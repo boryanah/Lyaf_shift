@@ -14,6 +14,7 @@ python -m ipykernel install --user --name vega --display-name Vega
 
 python run_vega.py configs/main.ini
 
+for broadband (BB, bb) testing, cd julien: python ../run_vega.py main-BB-TEMPLATE.ini
 
 . "/global/homes/b/boryanah/anaconda3/etc/profile.d/conda.sh"
 conda activate desc
