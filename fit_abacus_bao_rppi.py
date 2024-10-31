@@ -34,16 +34,18 @@ if want_lcv:
     lcv_str = "_LCV"
 else:
     lcv_str = ""
-want_bb = True
+want_bb = False
 if want_bb:
     bb_str = "_bb"
 else:    
     bb_str = ""
 want_qso = True
 if want_qso:
-    qso_str = "_lyalya_lyaqso"
+    #qso_str = "_lyalya_lyaqso"
+    qso_str = "_lyaqso"
 else:
     qso_str = ""
+    vega = VegaInterface(f'configs/main{bb_str}.ini')
 vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference ask andrei re arinyo maybe different initializing of parameters
 
 # redefine coordinate grid
@@ -65,7 +67,10 @@ z_grid = np.ones_like(rp_grid) * z_eff
 
 # define coordinates
 new_coords = Coordinates(rp_min=rpbins[0], rp_max=rpbins[-1], rt_max=rpbins[-1], rp_nbins=len(rpbinc), rt_nbins=len(rpbinc), z_eff=z_eff)
-vega.corr_items['lyaxlya'].init_coordinates(new_coords)
+if want_qso:
+    vega.corr_items['lyaxqso'].init_coordinates(new_coords)
+else:
+    vega.corr_items['lyaxlya'].init_coordinates(new_coords)
 
 # create mask
 rp = np.tile(rpbinc, (rpbinc.shape[0], 1)).T
@@ -90,7 +95,8 @@ mask = (rp.flatten() > rp_min) & (rp.flatten() < rp_max) & (rt.flatten() > rt_mi
 mask_2d = mask[:, None] & mask[None, :]
 
 # read and mask covariance
-h = pyfits.open("/global/cfs/cdirs/desicollab/users/jguy/pk2xi/cf_lya_x_lya_desi_y1.fits")
+#h = pyfits.open("/global/cfs/cdirs/desicollab/users/jguy/pk2xi/cf_lya_x_lya_desi_y1.fits")
+h = pyfits.open("/global/cfs/projectdirs/desi/science/lya/eboss_dr16/public_dr16_correlations/cf_z_0_10-exp.fits")
 h["COR"].data["RP"] = np.tile(2+4*np.arange(50),(50,1)).T.ravel()
 h["COR"].data["RT"] = np.tile(2+4*np.arange(50),(50,1)).ravel() # unnecessary
 R = np.sqrt(h["COR"].data["RP"]**2+h["COR"].data["RT"]**2)
@@ -101,6 +107,14 @@ cov = h["COR"].data["CO"] / 20. # matrice de covariance de DESI Y1 CHECK
 cov /= 12.
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov = np.linalg.inv(cov)
+
+# load qso covariance matrix
+h = pyfits.open("/global/cfs/cdirs/desicollab/users/jguy/pk2xi/eboss-covariance/eboss-dr16-xcf-2500x2500-covariance.fits")
+cov = h[0].data / 20.
+#cov /= 12. # TESTING
+cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
+icov_qso = np.linalg.inv(cov)
+
 
 # Build model for monopole
 def monopole_model(params):
@@ -264,14 +278,15 @@ for i_jk in range(N_jk):
         return chisq
 
     def chisq_qso(params):
+        """
         #model = monopole_model(params)
         model = vega.compute_model(params, run_init=run_init)['lyaxlya']
         diff = model[mask] - data
         chisq = diff @ icov @ diff.T
-        
+        """
         model = vega.compute_model(params, run_init=run_init)['lyaxqso']
         diff = model[mask] - data_qso
-        chisq += diff @ icov @ diff.T
+        chisq = diff @ icov_qso @ diff.T
         return chisq
     
     # initialize and run iminuit
@@ -281,6 +296,7 @@ for i_jk in range(N_jk):
         minimizer = Minimizer(chisq, vega.sample_params)
     minimizer.minimize()
     run_init = False # to speed up
+    #quit() # run with want_jump == 2
     
     # gaussian uncertainties
     #print("errors", minimizer.errors)
