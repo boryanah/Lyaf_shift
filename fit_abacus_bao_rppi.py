@@ -29,7 +29,7 @@ xi_s_mu /= npairs
 """
 
 # initialize Vega
-want_lcv = False
+want_lcv = True
 if want_lcv:
     lcv_str = "_LCV"
 else:
@@ -39,7 +39,7 @@ if want_bb:
     bb_str = "_bb"
 else:    
     bb_str = ""
-want_qso = True
+want_qso = False
 if want_qso:
     #qso_str = "_lyalya_lyaqso"
     qso_str = "_lyaqso"
