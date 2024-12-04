@@ -29,19 +29,20 @@ xi_s_mu /= npairs
 """
 
 # initialize Vega
-want_lcv = True
+want_lcv = False
 if want_lcv:
     lcv_str = "_LCV"
     lcv_extra_str = "_nmesh1152"
     #lcv_extra_str = ""
 else:
     lcv_str = ""
+    lcv_extra_str = ""
 want_bb = True
 if want_bb:
     bb_str = "_bb"
 else:    
     bb_str = ""
-want_qso = False
+want_qso = True
 if want_qso:
     #qso_str = "_lyalya_lyaqso"
     qso_str = "_lyaqso"
