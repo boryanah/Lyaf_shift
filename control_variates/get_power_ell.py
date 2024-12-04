@@ -110,10 +110,10 @@ def get_poles(k, pk, bias, beta, poles=[0, 2, 4]):
 
 
 # sim params
-z_this = 2.5
 sim_name = sys.argv[1]
 los_dir = sys.argv[2]
-nmesh = 576
+nmesh = 576*2
+z_this = 2.5
 Lbox = 2000.
 model_no = int(sys.argv[3])
 ph = int(sim_name.split("_ph")[-1])

@@ -42,7 +42,7 @@ def get_k_hMpc_real(Ndim, L_hMpc):
     return k_hMpc
 
 # load density field
-nmesh = 576#*2
+nmesh = 576*2
 ic_dir = "/global/cfs/cdirs/desi/cosmosim/Abacus/ic/"
 sim_name = sys.argv[1]#"AbacusSummit_base_c000_ph000"
 ic_fn = Path(ic_dir) / sim_name / f'ic_dens_N{nmesh:d}.asdf'
@@ -90,6 +90,7 @@ boltz.compute()
 
 D = boltz.scale_independent_growth_factor(z_this)
 D /= boltz.scale_independent_growth_factor(z_ic)
+f_growth = boltz.scale_independent_growth_factor_f(z_this)
 
 # load input linear power
 kth = meta['CLASS_power_spectrum']['k (h/Mpc)']
@@ -141,4 +142,4 @@ deltamu2_fft_pad[mask_perp_1d[:, np.newaxis, np.newaxis] & mask_perp_1d[np.newax
 
 # [b (1 + beta mu^2) D delta]* [b (1 + beta mu^2) D delta] = b^2 D^2 [<delta^2> + beta <mu^2 delta^2> + beta^2 <mu^4 delta^2>]
 #fields_fft = {'delta': D*delta_fft_pad, 'deltamu2': D*deltamu2_fft_pad}
-np.savez(f"/pscratch/sd/b/boryanah/AbacusLymanAlpha/control_variates/lin_dens_z{z_this:.3f}_N{nmesh:d}_{sim_name}_los{los_dir}.npz", delta_fft_pad=D*delta_fft_pad, deltamu2_fft_pad=D*deltamu2_fft_pad, p_m_lin=p_m_lin, kth=kth)
+np.savez(f"/pscratch/sd/b/boryanah/AbacusLymanAlpha/control_variates/lin_dens_z{z_this:.3f}_N{nmesh:d}_{sim_name}_los{los_dir}.npz", delta_fft_pad=D*delta_fft_pad, deltamu2_fft_pad=D*deltamu2_fft_pad, p_m_lin=p_m_lin, kth=kth, D_growth=D, f_growth=f_growth)

@@ -50,6 +50,35 @@ python cv.py AbacusSummit_base_c000_ph002 z 4
 python cv.py AbacusSummit_base_c000_ph003 z 4
 python cv.py AbacusSummit_base_c000_ph004 z 4
 python cv.py AbacusSummit_base_c000_ph005 z 4
+
+
+python cv.py AbacusSummit_base_c000_ph000 y 1
+python cv.py AbacusSummit_base_c000_ph001 y 1
+python cv.py AbacusSummit_base_c000_ph002 y 1
+python cv.py AbacusSummit_base_c000_ph003 y 1
+python cv.py AbacusSummit_base_c000_ph004 y 1
+python cv.py AbacusSummit_base_c000_ph005 y 1
+
+python cv.py AbacusSummit_base_c000_ph000 y 2
+python cv.py AbacusSummit_base_c000_ph001 y 2
+python cv.py AbacusSummit_base_c000_ph002 y 2
+python cv.py AbacusSummit_base_c000_ph003 y 2
+python cv.py AbacusSummit_base_c000_ph004 y 2
+python cv.py AbacusSummit_base_c000_ph005 y 2
+
+python cv.py AbacusSummit_base_c000_ph000 y 3
+python cv.py AbacusSummit_base_c000_ph001 y 3
+python cv.py AbacusSummit_base_c000_ph002 y 3
+python cv.py AbacusSummit_base_c000_ph003 y 3
+python cv.py AbacusSummit_base_c000_ph004 y 3
+python cv.py AbacusSummit_base_c000_ph005 y 3
+
+python cv.py AbacusSummit_base_c000_ph000 y 4
+python cv.py AbacusSummit_base_c000_ph001 y 4
+python cv.py AbacusSummit_base_c000_ph002 y 4
+python cv.py AbacusSummit_base_c000_ph003 y 4
+python cv.py AbacusSummit_base_c000_ph004 y 4
+python cv.py AbacusSummit_base_c000_ph005 y 4
 """
 
 
@@ -77,7 +106,7 @@ def get_r_hMpc(Ndim, L_hMpc):
 z_this = 2.5
 sim_name = sys.argv[1]
 los_dir = sys.argv[2]
-nmesh = 576
+nmesh = 576*2
 Lbox = 2000.
 model_no = int(sys.argv[3])
 ph = int(sim_name.split("_ph")[-1])
@@ -280,4 +309,7 @@ rlos_bin_edges = rlos_bin_edges.astype(np.float32)
 xirppi = compute_xirppi_from_xi3d(Xi_new, Lbox, Ndim_x, Ndim_z, rperp_box, rlos_box, rperp_bin_edges, rlos_bin_edges)
 
 # record
-np.savez(f"../data_fft/Xi_rppi_LyAxLyA_LCV_{sim_name}_Model_{model_no:d}_LOS{los_dir[-1]}_d{d:.1f}.npz", xirppi=xirppi, rp_bins=rperp_bin_edges, pi_bins=rlos_bin_edges, rlos_max=rlos_max, rperp_max=rperp_max)
+if nmesh != 576:
+    np.savez(f"../data_fft/Xi_rppi_LyAxLyA_LCV_{sim_name}_Model_{model_no:d}_LOS{los_dir[-1]}_d{d:.1f}_nmesh{nmesh:d}.npz", xirppi=xirppi, rp_bins=rperp_bin_edges, pi_bins=rlos_bin_edges, rlos_max=rlos_max, rperp_max=rperp_max)
+else:
+    np.savez(f"../data_fft/Xi_rppi_LyAxLyA_LCV_{sim_name}_Model_{model_no:d}_LOS{los_dir[-1]}_d{d:.1f}.npz", xirppi=xirppi, rp_bins=rperp_bin_edges, pi_bins=rlos_bin_edges, rlos_max=rlos_max, rperp_max=rperp_max)

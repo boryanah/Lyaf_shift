@@ -32,9 +32,11 @@ xi_s_mu /= npairs
 want_lcv = True
 if want_lcv:
     lcv_str = "_LCV"
+    lcv_extra_str = "_nmesh1152"
+    #lcv_extra_str = ""
 else:
     lcv_str = ""
-want_bb = False
+want_bb = True
 if want_bb:
     bb_str = "_bb"
 else:    
@@ -103,18 +105,16 @@ R = np.sqrt(h["COR"].data["RP"]**2+h["COR"].data["RT"]**2)
 mask_data = (h["COR"].data["RP"] > rp_min) & (h["COR"].data["RP"] < rp_max) & (h["COR"].data["RT"] > rt_min) & (h["COR"].data["RT"] < rt_max) & (R > rmin) & (R < rmax)
 mask_2d_data = mask_data[:, None] & mask_data[None, :]
 cov = h["COR"].data["CO"] / 20. # matrice de covariance de DESI Y1 CHECK
-#cov /= 6.
-cov /= 12.
+#cov /= 12.  # the original stuff in the paper has this line uncommented TESTING
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov = np.linalg.inv(cov)
 
 # load qso covariance matrix
 h = pyfits.open("/global/cfs/cdirs/desicollab/users/jguy/pk2xi/eboss-covariance/eboss-dr16-xcf-2500x2500-covariance.fits")
 cov = h[0].data / 20.
-#cov /= 12. # TESTING
+#cov /= 12. # in the paper we commented this out; TESTING # I think this is what makes the computation incredibly slow cause it means you need a super high precision
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov_qso = np.linalg.inv(cov)
-
 
 # Build model for monopole
 def monopole_model(params):
@@ -186,7 +186,7 @@ for i_jk in range(N_jk):
         
         # process
         if want_fft:
-            data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+            data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
 
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
@@ -201,7 +201,7 @@ for i_jk in range(N_jk):
             xi = xirppi.flatten()
 
             if want_qso:
-                data = np.load(f"data_fft/Xi_rppi_LyAxQSO{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0.npz")
+                data = np.load(f"data_fft/Xi_rppi_LyAxQSO{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
                 xirppi = data['xirppi']
 
                 xirppi = xirppi[choice].reshape(np.sum(rp_binc < rpbins[-1]), np.sum(pi_binc < rpbins[-1]))

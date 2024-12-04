@@ -48,7 +48,10 @@ los_dir = sys.argv[3]#"losy" # "losy"
 
 # mock directory
 save_dir = "/global/cfs/cdirs/desi/public/cosmosim/AbacusLymanAlpha/v1/"
-save_qso_dir = "/pscratch/sd/b/boryanah/abacus_tng_lyalpha/"
+if los_dir == "losy":
+    save_qso_dir = "/pscratch/sd/b/boryanah/abacus_tng_lyalpha/"
+else:
+    save_qso_dir = "/global/cfs/cdirs/desi/public/cosmosim/AbacusLymanAlpha/v1/"
 save_xi_dir = "/pscratch/sd/b/boryanah/AbacusLymanAlpha/"
 
 # load low-pass-filtered delta F in Fourier space

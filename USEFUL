@@ -22,3 +22,6 @@ conda activate desc
 salloc --nodes 1 --qos interactive --time 04:00:00 --constrain cpu
 
 
+
+just added bias_QSO to the parameters being sampled -- and then set them to const cause no constr power in lyaqso
+NEED TO RERUN THE QSO NO CV OPTION!!!!!! cause bias was 3.8 needs to be 3.3 or lower...
