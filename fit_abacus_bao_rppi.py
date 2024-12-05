@@ -42,7 +42,7 @@ if want_bb:
     bb_str = "_bb"
 else:    
     bb_str = ""
-want_qso = True
+want_qso = False
 if want_qso:
     #qso_str = "_lyalya_lyaqso"
     qso_str = "_lyaqso"
@@ -50,6 +50,13 @@ else:
     qso_str = ""
     vega = VegaInterface(f'configs/main{bb_str}.ini')
 vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference ask andrei re arinyo maybe different initializing of parameters
+
+# do you want linear density field?
+want_linear = True
+if want_linear:
+    linear_str = "_linear_density"
+else:
+    linear_str = ""
 
 # redefine coordinate grid
 #rpbins = np.linspace(0, 148, 38)
@@ -187,7 +194,10 @@ for i_jk in range(N_jk):
         
         # process
         if want_fft:
-            data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
+            if want_linear:
+                data = np.load(f"linear_density/data/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_linear_density_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
+            else:
+                data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
 
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
@@ -369,6 +379,6 @@ pars_dict['beta'] = np.array(stats('beta_LYA', beta))
 pars_dict['sigmap'] = np.array(stats('sigmaNL_par', sigmap))
 pars_dict['sigmat'] = np.array(stats('sigmaNL_per', sigmat))
 if want_both_los:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOSzy_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}{linear_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
 else:
-    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
+    np.savez(f"data_fits/{stats_type}stats{bb_str}{lcv_str}{qso_str}_Model_{model_no:d}_LOS{los_dir}_rpmin{rp_min:.1f}_rpmax{rp_max:.1f}_rtmin{rt_min:.1f}_rtmax{rt_max:.1f}_rmin{rmin:.1f}_rmax{rmax:.1f}_njk{N_jk:d}{fft_str}{linear_str}.npz", param_mean_error_perc_sign=pars_dict, aps=aps, ats=ats, bias=bias, beta=beta, sigmap=sigmap, sigmat=sigmat)
