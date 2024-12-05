@@ -113,7 +113,7 @@ R = np.sqrt(h["COR"].data["RP"]**2+h["COR"].data["RT"]**2)
 mask_data = (h["COR"].data["RP"] > rp_min) & (h["COR"].data["RP"] < rp_max) & (h["COR"].data["RT"] > rt_min) & (h["COR"].data["RT"] < rt_max) & (R > rmin) & (R < rmax)
 mask_2d_data = mask_data[:, None] & mask_data[None, :]
 cov = h["COR"].data["CO"] / 20. # matrice de covariance de DESI Y1 CHECK
-#cov /= 12.  # the original stuff in the paper has this line uncommented TESTING
+cov /= 12.  # the original stuff in the paper has this line uncommented TESTING
 cov = cov[mask_2d_data].reshape(np.sum(mask_data), np.sum(mask_data))
 icov = np.linalg.inv(cov)
 
