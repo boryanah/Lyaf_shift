@@ -29,7 +29,7 @@ xi_s_mu /= npairs
 """
 
 # initialize Vega
-want_lcv = False
+want_lcv = True
 if want_lcv:
     lcv_str = "_LCV"
     lcv_extra_str = "_nmesh1152"
@@ -55,6 +55,7 @@ vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference
 want_linear = True
 if want_linear:
     linear_str = "_linear_density"
+    #linear_str = "_EFT"
 else:
     linear_str = ""
 
@@ -195,7 +196,7 @@ for i_jk in range(N_jk):
         # process
         if want_fft:
             if want_linear:
-                data = np.load(f"linear_density/data/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_linear_density_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
+                data = np.load(f"linear_density/data/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}{linear_str}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
             else:
                 data = np.load(f"data_fft/Xi_rppi_LyAxLyA{lcv_str}_AbacusSummit_base_c000_ph{i_sim:03d}_Model_{model_no:d}_LOS{los_dir[-1]}_d4.0{lcv_extra_str}.npz")
 

@@ -179,6 +179,7 @@ def bin_kmu(weights, kxy, kz, kedges, muedges, poles=np.empty(0, 'i8'), dtype=np
         poles = poles.astype(np.int64)
     weighted_counts_poles = np.zeros((nthread, len(poles), Nk), dtype=dtype)
     weighted_counts_k = np.zeros((nthread, Nk, Nmu), dtype=dtype)
+    weighted_counts_mu = np.zeros((nthread, Nk, Nmu), dtype=dtype)
 
     # Loop over all k vectors
     for i in numba.prange(len(kxy)):
@@ -215,6 +216,9 @@ def bin_kmu(weights, kxy, kz, kedges, muedges, poles=np.empty(0, 'i8'), dtype=np
                 weighted_counts_k[tid, bk, bmu] += (
                     np.sqrt(kmag2) if k == 0 else dtype(2.0) * np.sqrt(kmag2)
                 )
+                weighted_counts_mu[tid, bk, bmu] += (
+                    np.sqrt(mu2) if k == 0 else dtype(2.0) * np.sqrt(mu2)
+                )
                 if Np > 0:
                     for ip in range(len(poles)):
                         pole = poles[ip]
@@ -230,6 +234,7 @@ def bin_kmu(weights, kxy, kz, kedges, muedges, poles=np.empty(0, 'i8'), dtype=np
     weighted_counts = weighted_counts.sum(axis=0)
     weighted_counts_poles = weighted_counts_poles.sum(axis=0)
     weighted_counts_k = weighted_counts_k.sum(axis=0)
+    weighted_counts_mu = weighted_counts_mu.sum(axis=0)
     counts_poles = counts.sum(axis=1)
 
     for ip, pole in enumerate(poles):
@@ -244,12 +249,14 @@ def bin_kmu(weights, kxy, kz, kedges, muedges, poles=np.empty(0, 'i8'), dtype=np
             if counts[i, j] != 0:
                 weighted_counts[i, j] /= dtype(counts[i, j])
                 weighted_counts_k[i, j] /= dtype(counts[i, j])
+                weighted_counts_mu[i, j] /= dtype(counts[i, j])
     return (
         weighted_counts,
         counts,
         weighted_counts_poles,
         counts_poles,
         weighted_counts_k,
+        weighted_counts_mu,
     )
 
 
@@ -397,11 +404,11 @@ def compute_xirppi_from_xi3d(Xi, L_hMpc, nperp, nlos, rp_box, pi_box, rp_bin_edg
     # compute mean number of modes
     print("binning")
     print(rp_box.shape, pi_box.shape)
-    binned_p3d = mean2d_numba_seq(np.array([rp_box, pi_box]), bins=nbins2d, ranges=ranges, weights=Xi, logk=False)
+    rp, pi, binned_p3d = mean2d_numba_seq(np.array([rp_box, pi_box]), bins=nbins2d, ranges=ranges, weights=Xi, logk=False)
 
     # quantity above is dimensionless, multiply by box size (in Mpc/h)
     xirppi = binned_p3d * nperp**2 * nlos
-    return xirppi
+    return rp, pi, xirppi
 
 @numba.njit(nogil=True, parallel=False)
 def mean2d_numba_seq(tracks, bins, ranges, weights=np.empty(0), dtype=np.float32, logk=True):
@@ -412,6 +419,8 @@ def mean2d_numba_seq(tracks, bins, ranges, weights=np.empty(0), dtype=np.float32
     """
     H = np.zeros((bins[0], bins[1]), dtype=dtype)
     N = np.zeros((bins[0], bins[1]), dtype=dtype)
+    RP = np.zeros((bins[0], bins[1]), dtype=dtype)
+    PI = np.zeros((bins[0], bins[1]), dtype=dtype)
     if logk:
         delta0 = 1/(np.log(ranges[0,1]/ranges[0,0]) / bins[0])
     else:
@@ -429,9 +438,13 @@ def mean2d_numba_seq(tracks, bins, ranges, weights=np.empty(0), dtype=np.float32
 
             N[int(i),int(j)] += 1.
             H[int(i),int(j)] += weights[t]
+            RP[int(i),int(j)] += tracks[0,t]
+            PI[int(i),int(j)] += tracks[1,t]
 
     for i in range(bins[0]):
         for j in range(bins[1]):
             if N[i, j] > 0.:
                 H[i, j] /= N[i, j]
-    return H
+                RP[i, j] /= N[i, j]
+                PI[i, j] /= N[i, j]
+    return RP, PI, H
