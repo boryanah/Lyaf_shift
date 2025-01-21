@@ -54,8 +54,8 @@ vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference
 # do you want linear density field?
 want_linear = True
 if want_linear:
-    linear_str = "_linear_density"
-    #linear_str = "_EFT"
+    #linear_str = "_linear_density"
+    linear_str = "_EFT"
 else:
     linear_str = ""
 
@@ -203,6 +203,8 @@ for i_jk in range(N_jk):
             rp_bins = data['rp_bins']
             pi_bins = data['pi_bins']
             xirppi = data['xirppi']
+            if xirppi.shape[0] == 3:
+                xirppi = xirppi[2]
             
             rp_binc = (rp_bins[1:]+rp_bins[:-1])*.5
             pi_binc = (pi_bins[1:]+pi_bins[:-1])*.5
