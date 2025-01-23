@@ -55,7 +55,8 @@ vega = VegaInterface(f'configs/main{bb_str}{qso_str}.ini') # makes no difference
 want_linear = True
 if want_linear:
     #linear_str = "_linear_density"
-    linear_str = "_EFT"
+    #linear_str = "_EFT"
+    linear_str = "_EFT2" # TESTING
 else:
     linear_str = ""
 
